@@ -93,8 +93,8 @@
           "desc": "Every pipeline needs to be approved before being executed."
         },
         "netrc_only_trusted": {
-          "netrc_only_trusted": "Only inject netrc credentials into trusted containers",
-          "desc": "Only inject netrc credentials into trusted containers (recommended)."
+          "netrc_only_trusted": "Only inject netrc credentials (= git credentials) into trusted containers.",
+          "desc": "Disabling this option allows the usage of the git credentials used during checkout in all containers."
         },
         "trusted": {
           "trusted": "Trusted",
