@@ -19,41 +19,31 @@ import (
 
 	"src.techknowlogick.com/xormigrate"
 	"xorm.io/xorm"
+
+	"go.woodpecker-ci.org/woodpecker/v2/server/model"
 )
 
-type stepV033 struct {
-	Finished int64 `xorm:"stopped"`
+type agentV015 struct {
+	ID      int64 `xorm:"pk autoincr 'id'"`
+	OwnerID int64 `xorm:"INDEX 'owner_id'"`
+	OrgID   int64 `xorm:"INDEX 'org_id'"`
 }
 
-func (stepV033) TableName() string {
-	return "steps"
+func (agentV015) TableName() string {
+	return "agents"
 }
 
-type workflowV033 struct {
-	Finished int64 `xorm:"stopped"`
-}
-
-func (workflowV033) TableName() string {
-	return "workflows"
-}
-
-var renameStartEndTime = xormigrate.Migration{
-	ID: "rename-start-end-time",
+var addOrgAgents = xormigrate.Migration{
+	ID: "add-org-agents",
 	MigrateSession: func(sess *xorm.Session) (err error) {
-		if err := sess.Sync(new(stepV033), new(workflowV033)); err != nil {
+		if err := sess.Sync(new(agentV015)); err != nil {
 			return fmt.Errorf("sync models failed: %w", err)
 		}
 
-		// Step
-		if err := renameColumn(sess, "steps", "stopped", "finished"); err != nil {
-			return err
-		}
-
-		// Workflow
-		if err := renameColumn(sess, "workflows", "stopped", "finished"); err != nil {
-			return err
-		}
-
-		return nil
+		// Update all existing agents to be global agents
+		_, err = sess.Cols("org_id").Update(&model.Agent{
+			OrgID: model.IDNotSet,
+		})
+		return err
 	},
 }

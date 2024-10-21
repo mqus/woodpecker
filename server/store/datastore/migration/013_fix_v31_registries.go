@@ -1,10 +1,10 @@
-// Copyright 2022 Woodpecker Authors
+// Copyright 2024 Woodpecker Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,15 +19,17 @@ import (
 	"xorm.io/xorm"
 )
 
-var removeInactiveRepos = xormigrate.Migration{
-	ID: "remove-inactive-repos",
-	MigrateSession: func(sess *xorm.Session) error {
-		// If the timeout is 0, the repo was never activated, so we remove it.
-		_, err := sess.Table("repos").Where("repo_active = ?", false).And("repo_timeout = ?", 0).Delete()
+var fixV31Registries = xormigrate.Migration{
+	ID: "fix-v31-registries",
+	MigrateSession: func(sess *xorm.Session) (err error) {
+		has, err := sess.IsTableExist("registry_v031")
 		if err != nil {
 			return err
 		}
+		if has {
+			return sess.DropTable("registry_v031")
+		}
 
-		return dropTableColumns(sess, "users", "user_synced")
+		return nil
 	},
 }
